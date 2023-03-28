@@ -13,6 +13,9 @@ import GameStatus from '../types/GameStatus';
 function Game() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [games, setGames] = useState<GameType[]>([]);
+  const [t1name, setT1Name] = useState<string>('');
+  const [t2name, setT2Name] = useState<string>('');
+
   const storageKey = 'users';
 
   useEffect(() => {
@@ -62,7 +65,6 @@ function Game() {
         return Math.floor(Math.random() * result.length) - 1
       })
 
-      let combination: UserType[][] = []
       let result2: UserType[][] = [];
       let len = result.length;
       
@@ -105,6 +107,7 @@ function Game() {
             let usersCopy = users;
             usersCopy[user.id - 1] = user;
             setUsers([...usersCopy]);
+            
           })
           game.status = GameStatus.FINISHED;
         }
@@ -112,6 +115,19 @@ function Game() {
       return game;
     })
     setGames([...newGame]);
+    setNames();
+  }
+
+  const setNames = () => {
+    let usersCopy2 = users;
+    usersCopy2.sort((a,b) => {
+      if(a.attended > b.attended) return 1;
+      if(a.attended < b.attended) return -1;
+      return 0;
+    })
+    console.log(usersCopy2[0].name, usersCopy2[1].name)
+    setT1Name(usersCopy2[0].name);
+    setT2Name(usersCopy2[1].name);
   }
 
   const randomZeroOneMinusOne = () => {
@@ -153,9 +169,10 @@ function Game() {
       if(game.players.filter(user => user.available === false).length > 0 && game.status === GameStatus.READY) return {display: 'none'}
       if(game.status === GameStatus.PLAYING) {
         return {backgroundColor: 'green'}
-      }
-      if(game.status === GameStatus.FINISHED) {
+      }else if(game.status === GameStatus.FINISHED) {
         return {backgroundColor: 'grey'}
+      }else if(game.players.filter(user => user.name === t1name || user.name === t2name).length > 1 && game.status === GameStatus.READY){
+        return {backgroundColor: 'yellow'}
       }
     }
 
