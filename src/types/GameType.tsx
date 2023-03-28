@@ -3,7 +3,8 @@ import UserType from "./UserType";
 interface GameType {
   id: number;
   players: UserType[];
-  result: number;
+  status: number;
+  available: boolean;
 }
 
 export default GameType;

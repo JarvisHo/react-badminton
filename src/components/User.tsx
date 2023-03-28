@@ -24,6 +24,8 @@ import Button from "@mui/material/Button";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
 
 function User() {
   const [name, setName] = useState('')
@@ -37,7 +39,9 @@ function User() {
 
   useEffect(() => {
     let cached = JSON.parse(localStorage.getItem(storageKey) || '[]')
-    if (cached) setUsers(cached);
+    if (cached.length > 0) {
+      setUsers(cached);
+    }
   }, []);
 
   const resetUser = () => {
@@ -47,13 +51,13 @@ function User() {
 
   const addUser = () => {
     if (!name) return
-    let newUser = {id: users.length + 1, name, rank, attended: 0};
+    let newUser = {id: users.length + 1, name, rank, attended: 0, available: true};
     setUsers([...users, newUser]);
     setName('')
   }
 
   const removeUser = (id: number) => {
-    let newUsers = users.filter((user) => user.id !== id);
+    let newUsers = users.filter((user) => user.id != id);
     setUsers(newUsers);
   }
 
@@ -118,21 +122,32 @@ function User() {
     {label: 'Wade', rank: 2},
     {label: '靖堯', rank: 0},
     {label: '冠廷', rank: 2},
+    {label: '昇龍餃子', rank: 0},
+    {label: '安娜', rank: 0},
   ]
 
   const handleChange = (event: SelectChangeEvent) => {
     if(event.target.value === '快速選擇成員') return
     const data = defaultUsers.find((user) => user.label === event.target.value)
     if(!data) return
-    const user = {id: users.length + 1, name: data.label, rank: data.rank, attended: 0}
+    const user = {id: users.length + 1, name: data.label, rank: data.rank, attended: 0, available: true}
     const existed = users.find((user) => user.name === data.label);
     if(existed) return
     setUsers([...users, user]);
   }
 
   return (
-    <div>
-      <List sx={{width: '100%', maxWidth: 360, margin: '0 auto'}}>
+    <Box
+      sx={{
+        marginTop: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        alignItems: 'center',
+      }}
+    >
+      {}
+      <List sx={{width: '100%',  margin: '0 auto'}}>
         {users.map((user) => (
           <ListItem
             sx={{borderBottom: '1px solid #d3d4d5'}}
@@ -194,9 +209,15 @@ function User() {
           <FormControlLabel value="6" control={<Radio/>} label="達克萊伊"/>
         </RadioGroup>
       </FormControl>
-      <Button sx={{marginTop: 3}} color="primary" variant="contained" onClick={() => addUser()}>加入列表</Button>
-      <Button sx={{marginTop: 3, marginLeft: 2}} color="primary" variant="outlined" onClick={() => resetUser()}>清空列表</Button>
-    </div>
+      <Grid container spacing={2}>
+        <Grid item xs={4}>
+        <Button sx={{marginTop: 3, width: '100%'}} color="primary" variant="outlined" onClick={() => resetUser()}>清空列表</Button>
+        </Grid>
+        <Grid item xs={8}>
+        <Button sx={{marginTop: 3, width: '100%'}} color="primary" variant="contained" onClick={() => addUser()}>加入列表</Button>
+        </Grid>
+      </Grid>
+    </Box>
   )
 }
 
