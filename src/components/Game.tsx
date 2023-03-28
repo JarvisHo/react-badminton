@@ -157,7 +157,6 @@ function Game() {
       if(game.status === GameStatus.FINISHED) {
         return {backgroundColor: 'grey'}
       }
-      if(index > 50) return {display: 'none'}
     }
 
   const stringToColor = (string: string) => {
