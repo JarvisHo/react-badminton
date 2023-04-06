@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import UserType from '../types/UserType'
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -10,6 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import EditIcon from '@mui/icons-material/EditOutlined';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import avatar0241 from '../assets/ranks/e22a57632e83045e3c510f2f31dbb0f249c61a34.png'
@@ -19,46 +20,82 @@ import avatar0219 from '../assets/ranks/f2c7684047094bb7669c1ef4070475ada8ed6d25
 import avatar0083 from '../assets/ranks/810c4dc60ff4f315216717a2ecaa3c7dfe3fcf09.png'
 import avatar0639 from '../assets/ranks/9a1980e702ceeb122fd621c99fe3b144e07d3cd4.png'
 import avatar0491 from '../assets/ranks/b42d945352da56b666f18921e82460bba81898c8.png'
-import {nanoid} from 'nanoid'
 import Button from "@mui/material/Button";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
+import PersonAdd from "@mui/icons-material/PersonAdd";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemButton from "@mui/material/ListItemButton";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Typography from "@mui/material/Typography";
+import Switch from '@mui/material/Switch';
 
 function User() {
+  const [editId, setEditId] = useState<number>(0)
   const [name, setName] = useState('')
   const [rank, setRank] = useState(0)
+  const [attended, setAttended] = useState(0)
+  const [playing, setPlaying] = useState(false)
   const [users, setUsers] = useState<UserType[]>([]);
-  const storageKey = 'users';
+  const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    if (users.length > 0) localStorage.setItem(storageKey, JSON.stringify(users));
-  }, [users]);
+  const storageKey = 'users';
 
   useEffect(() => {
     let cached = JSON.parse(localStorage.getItem(storageKey) || '[]')
     if (cached.length > 0) {
       setUsers(cached);
+    } else {
+      setDefaultUsers()
     }
   }, []);
 
-  const resetUser = () => {
-    setUsers([]);
-    localStorage.removeItem(storageKey);
-  };
+  const setDefaultUsers = () => {
+    let i = 0;
+    const customUsers = defaultUsers.map((user) => {
+      return { id: user.id, name: user.label, rank: user.rank, attended: 0, available: false, checked: false, playing: false }
+    })
 
-  const addUser = () => {
-    if (!name) return
-    let newUser = {id: users.length + 1, name, rank, attended: 0, available: true};
-    setUsers([...users, newUser]);
-    setName('')
+    setUsers(customUsers)
+    localStorage.setItem(storageKey, JSON.stringify(customUsers));
   }
 
-  const removeUser = (id: number) => {
-    let newUsers = users.filter((user) => user.id != id);
-    setUsers(newUsers);
+  const handleReset = () => {
+    init()
+    localStorage.clear()
+    setDefaultUsers()
+  }
+
+  const init = () => {
+    setUsers([])
+  }
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setEditOpen(false);
+    setConfirmOpen(false);
+  };
+
+  const handleAddUser = () => {
+    addUser(name, rank)
+    handleClose()
+  }
+
+  const addUser = (userName: string, userRank: number) => {
+    if (!userName) return
+    let newUser = { id: users.length + 1, name: userName, rank: userRank, attended: 0, available: false, checked: false, playing: false };
+    setUsers([...users, newUser]);
+    localStorage.setItem(storageKey, JSON.stringify([...users, newUser]));
   }
 
   const getAvatar = (rank: number) => {
@@ -82,6 +119,17 @@ function User() {
     }
   }
 
+  const handleToggle = (value: number) => () => {
+    const checkedUsers = users.map((user) => {
+      if (user.id === value) {
+        user.available = !user.available;
+      }
+      return user
+    })
+    setUsers([...checkedUsers])
+    localStorage.setItem(storageKey, JSON.stringify([...checkedUsers]));
+  };
+
   const getAvatarName = (rank: number) => {
     switch (rank) {
       case 0:
@@ -104,119 +152,240 @@ function User() {
   }
 
   const defaultUsers = [
-    {label: '快速選擇成員', rank: 0},
-    {label: 'Heidi', rank: 0},
-    {label: '懷恩', rank: 4},
-    {label: 'Alice', rank: 0},
-    {label: '黛玉', rank: 4},
-    {label: 'Oli', rank: 0},
-    {label: "潔西", rank: 1},
-    {label: '上倫', rank: 2},
-    {label: '五千', rank: 0},
-    {label: '薇文', rank: 0},
-    {label: '方塊馬', rank: 4},
-    {label: '震宇', rank: 2},
-    {label: 'Falcon', rank: 3},
-    {label: '家安', rank: 3},
-    {label: '喬治', rank: 0},
-    {label: 'Wade', rank: 2},
-    {label: '靖堯', rank: 0},
-    {label: '冠廷', rank: 2},
-    {label: '昇龍餃子', rank: 0},
-    {label: '安娜', rank: 0},
+    { id: 1, label: 'Heidi', rank: 0 },
+    { id: 2, label: 'Alice', rank: 0 },
+    { id: 3, label: 'Oli', rank: 0 },
+    { id: 4, label: '五千', rank: 0 },
+    { id: 5, label: '薇文', rank: 0 },
+    { id: 6, label: '喬治', rank: 0 },
+    { id: 7, label: '靖堯', rank: 0 },
+    { id: 8, label: '昇龍餃子', rank: 0 },
+    { id: 9, label: "潔西", rank: 1 },
+    { id: 10, label: '上倫', rank: 2 },
+    { id: 11, label: '安娜', rank: 0 },
+    { id: 12, label: '震宇', rank: 2 },
+    { id: 13, label: '冠廷', rank: 2 },
+    { id: 14, label: 'Wade', rank: 2 },
+    { id: 15, label: 'Falcon', rank: 3 },
+    { id: 16, label: '家安', rank: 3 },
+    { id: 17, label: '黛玉', rank: 4 },
+    { id: 18, label: '方塊馬', rank: 4 },
+    { id: 19, label: '懷恩', rank: 4 },
   ]
 
-  const handleChange = (event: SelectChangeEvent) => {
-    if(event.target.value === '快速選擇成員') return
-    const data = defaultUsers.find((user) => user.label === event.target.value)
-    if(!data) return
-    const user = {id: users.length + 1, name: data.label, rank: data.rank, attended: 0, available: true}
-    const existed = users.find((user) => user.name === data.label);
-    if(existed) return
-    setUsers([...users, user]);
+  const handleEdit = (id: number) => () => {
+    const user = users.find((user) => user.id === id);
+    if (!user) return
+    setEditId(user.id)
+    setName(user.name)
+    setRank(user.rank)
+    setAttended(user.attended)
+    setPlaying(user.playing)
+    setEditOpen(true)
+  }
+
+  const handleDeleteUser = () => {
+    if(!confirmOpen) {
+      setEditOpen(false)
+      setConfirmOpen(true)
+      return
+    }
+    let newUsers = users.filter((user) => user.id !== editId);
+    setUsers([...newUsers]);
+    localStorage.setItem(storageKey, JSON.stringify([...newUsers]));
+    setEditId(0);
+    setName('')
+    setRank(0)
+    handleClose()
+  }
+
+  const handleUpdateUser = () => {
+    let newUsers = users.map((user) => {
+      if (user.id === editId) {
+        return { ...user, name, rank, attended, playing }
+      }
+      return user
+    })
+    setUsers([...newUsers]);
+    localStorage.setItem(storageKey, JSON.stringify([...newUsers]));
+    handleClose()
+  }
+
+  const handlePlayingChange = () => {
+    playing ? setPlaying(false) : setPlaying(true)
   }
 
   return (
     <Box
       sx={{
-        marginTop: 4,
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh',
         alignItems: 'center',
       }}
     >
-      {}
-      <List sx={{width: '100%',  margin: '0 auto'}}>
+      <Typography variant="subtitle1" sx={{color: 'grey', mb: 1}}>
+        選擇出賽球員
+      </Typography>
+      <List sx={{ width: '100%', margin: '0 auto', pt: 0 }}>
         {users.map((user) => (
           <ListItem
-            sx={{borderBottom: '1px solid #d3d4d5'}}
-            key={nanoid()}
+            sx={{ borderBottom: '1px solid #d3d4d5' }}
             disableGutters
+            key={user.id}
             secondaryAction={
-              <IconButton aria-label="comment" onClick={() => removeUser(user.id)}>
-                <DeleteIcon/>
+              <IconButton edge="end" aria-label="comments" onClick={handleEdit(user.id)}>
+                <EditIcon />
               </IconButton>
             }
           >
-            <ListItemAvatar>
-              <Avatar sx={{width: 64, height: 64, marginRight: 1}} alt={getAvatarName(user.rank)}
-                      src={getAvatar(user.rank)}/>
-            </ListItemAvatar>
-            <ListItemText primary={`${getAvatarName(user.rank)} - ${user.name}`}/>
+            <ListItemButton role={undefined} onClick={handleToggle(user.id)} dense>
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  checked={user.available}
+                  tabIndex={-1}
+                  disableRipple
+                />
+              </ListItemIcon>
+              <ListItemAvatar>
+                <Avatar sx={{ width: 64, height: 64, marginRight: 1 }} alt={getAvatarName(user.rank)}
+                  src={getAvatar(user.rank)} />
+              </ListItemAvatar>
+              <ListItemText primary={`${user.name}: ${user.attended}場`} />
+            </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <FormControl fullWidth sx={{marginTop: 1}}>
-        <Select
-          aria-labelledby="name-label"
-          value='快速選擇成員'
-          sx={{margin: '0 auto', width: 300}}
-          onChange={handleChange}
-        >
-          {defaultUsers.map((user) =>
-            <MenuItem key={nanoid()} value={user.label}>{user.label}</MenuItem>)}
-        </Select>
-      </FormControl>
-      <Divider sx={{marginTop: 2}}/>
-      <FormControl>
-        <TextField
-          sx={{marginTop: 2, width: 300}}
-          aria-labelledby="name-label"
-          required
-          id="outlined-required"
-          label="新增自訂成員"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </FormControl>
-      <FormControl sx={{
-        marginTop: 2
-      }}>
-        <RadioGroup
-          row
-          aria-labelledby="demo-radio-buttons-group-label"
-          defaultValue="0"
-          name="radio-buttons-group"
-          onChange={(e) => setRank(parseInt(e.target.value))}
-        >
-          <FormControlLabel value="0" control={<Radio/>} label="火稚雞"/>
-          <FormControlLabel value="1" control={<Radio/>} label="大蔥鴨"/>
-          <FormControlLabel value="2" control={<Radio/>} label="力壯雞"/>
-          <FormControlLabel value="3" control={<Radio/>} label="熔岩蝸牛"/>
-          <FormControlLabel value="4" control={<Radio/>} label="大奶罐"/>
-          <FormControlLabel value="5" control={<Radio/>} label="代拉基翁"/>
-          <FormControlLabel value="6" control={<Radio/>} label="達克萊伊"/>
-        </RadioGroup>
-      </FormControl>
-      <Grid container spacing={2}>
-        <Grid item xs={4}>
-        <Button sx={{marginTop: 3, width: '100%'}} color="primary" variant="outlined" onClick={() => resetUser()}>清空列表</Button>
-        </Grid>
-        <Grid item xs={8}>
-        <Button sx={{marginTop: 3, width: '100%'}} color="primary" variant="contained" onClick={() => addUser()}>加入列表</Button>
-        </Grid>
-      </Grid>
+      <Box sx={{ mt: 2 }}>
+        <Button variant="outlined" onClick={handleReset} sx={{ marginRight: '10px' }}>
+          重置
+        </Button>
+        <Button variant="contained" onClick={handleClickOpen}>
+          新增球員
+        </Button>
+      </Box>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>新增球員</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            名字：
+          </DialogContentText>
+          <FormControl>
+            <TextField
+              sx={{ marginTop: 2, width: 300 }}
+              aria-labelledby="name-label"
+              required
+              id="outlined-required"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{
+            marginTop: 2
+          }}>
+            <DialogContentText>
+              等級：
+            </DialogContentText>
+            <RadioGroup
+              row
+              aria-labelledby="demo-radio-buttons-group-label"
+              defaultValue="0"
+              name="radio-buttons-group"
+              onChange={(e) => setRank(parseInt(e.target.value))}
+            >
+              <FormControlLabel value="0" control={<Radio />} label="火稚雞" />
+              <FormControlLabel value="1" control={<Radio />} label="大蔥鴨" />
+              <FormControlLabel value="2" control={<Radio />} label="力壯雞" />
+              <FormControlLabel value="3" control={<Radio />} label="熔岩蝸牛" />
+              <FormControlLabel value="4" control={<Radio />} label="大奶罐" />
+              <FormControlLabel value="5" control={<Radio />} label="代拉基翁" />
+              <FormControlLabel value="6" control={<Radio />} label="達克萊伊" />
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={handleClose}>取消</Button>
+          <Button variant="contained" startIcon={<PersonAdd />} onClick={handleAddUser}>新增</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={editOpen} onClose={handleClose}>
+        <DialogTitle>編輯球員</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            名字：
+          </DialogContentText>
+          <FormControl>
+            <TextField
+              sx={{ marginTop: 2, width: 300 }}
+              aria-labelledby="name-label"
+              required
+              id="outlined-required"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{ mt: 2 }}>
+            <DialogContentText>
+              等級：
+            </DialogContentText>
+            <RadioGroup
+              row
+              aria-labelledby="demo-radio-buttons-group-label"
+              defaultValue={rank}
+              name="radio-buttons-group"
+              onChange={(e) => setRank(parseInt(e.target.value))}
+            >
+              <FormControlLabel value="0" control={<Radio />} label="火稚雞" />
+              <FormControlLabel value="1" control={<Radio />} label="大蔥鴨" />
+              <FormControlLabel value="2" control={<Radio />} label="力壯雞" />
+              <FormControlLabel value="3" control={<Radio />} label="熔岩蝸牛" />
+              <FormControlLabel value="4" control={<Radio />} label="大奶罐" />
+              <FormControlLabel value="5" control={<Radio />} label="代拉基翁" />
+              <FormControlLabel value="6" control={<Radio />} label="達克萊伊" />
+            </RadioGroup>
+          </FormControl>
+          <FormControl sx={{ mt: 2 }}>
+            <DialogContentText>
+              上場次數：
+            </DialogContentText>
+            <TextField
+              sx={{ marginTop: 2, width: 300 }}
+              aria-labelledby="name-label"
+              required
+              id="outlined-required"
+              value={attended}
+              onChange={(e) => setAttended(parseInt((e.target.value.length > 0) ? e.target.value : '0'))}
+            />
+          </FormControl>
+          <FormControlLabel sx={{mt: 1}} control={<Switch checked={playing} onChange={handlePlayingChange} />} label="比賽中" />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDeleteUser}>刪除</Button>
+          <Button variant="outlined" onClick={handleClose}>取消</Button>
+          <Button variant="contained" onClick={handleUpdateUser}>更新</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          確認刪除？
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            刪除「{name}」，確定嗎？
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteUser} autoFocus>
+            確認刪除
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

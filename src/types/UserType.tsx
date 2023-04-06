@@ -4,6 +4,8 @@ interface UserType {
   rank: number;
   attended: number;
   available: boolean;
+  checked: boolean;
+  playing: boolean;
 }
 
 export default UserType;
