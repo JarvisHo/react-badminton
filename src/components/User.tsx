@@ -381,8 +381,11 @@ function User() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteUser} autoFocus>
-            確認刪除
+          <Button variant='outlined' onClick={() => setConfirmOpen(false)} autoFocus>
+            取消
+          </Button>
+          <Button variant='contained' onClick={handleDeleteUser} autoFocus>
+            確認
           </Button>
         </DialogActions>
       </Dialog>

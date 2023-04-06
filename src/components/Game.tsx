@@ -338,6 +338,9 @@ function Game() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
+          <Button variant='outlined' onClick={() => setConfirmOpen(false)} autoFocus>
+            取消
+          </Button>
           <Button variant='contained' onClick={() => handleGameEnd()} autoFocus>
             確認
           </Button>
@@ -358,6 +361,9 @@ function Game() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
+          <Button variant='outlined' onClick={() => setCancelConfirmOpen(false)} autoFocus>
+            取消
+          </Button>
           <Button variant='contained' onClick={() => handleGameCancel()} autoFocus>
             確認
           </Button>
