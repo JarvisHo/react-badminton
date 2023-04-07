@@ -157,13 +157,20 @@ function Game() {
     let usersCopy = users.filter(user => user.checked === true);
     console.log(usersCopy.length)
     if(usersCopy.length !== 4) return
+    usersCopy.sort((a,b) => {
+      if(a.rank > b.rank) return 1;
+      if(a.rank < b.rank) return -1;
+      return randomZeroOneMinusOne();
+    })
+    usersCopy = [usersCopy[0], usersCopy[3], usersCopy[2], usersCopy[1]];
+    let gamesCopy = [{ id: games.length + 1, players: usersCopy, status: GameStatus.PLAYING, available: true }, ...games]
+    setGames([...gamesCopy]);
+    localStorage.setItem('games', JSON.stringify(gamesCopy));
+
     usersCopy = users.map(user => {
       if(user.checked === true){
         user.checked = false;
         user.playing = true;
-        let gamesCopy = [{ id: games.length + 1, players: usersCopy, status: GameStatus.PLAYING, available: true }, ...games]
-        setGames([...gamesCopy]);
-        localStorage.setItem('games', JSON.stringify(gamesCopy));
       }
       return user;
     });
@@ -245,6 +252,17 @@ function Game() {
     setGameId(0);
   }
 
+  const StyledVsBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
+    '& .MuiBadge-badge': {
+      right: -8,
+      top: -60,
+      fontSize: '1rem',
+      fontWeight: 'bold',
+      border: `0px`,
+      padding: '0 4px',
+    },
+  }));
+
   const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
     '& .MuiBadge-badge': {
       right: -8,
@@ -262,7 +280,40 @@ function Game() {
         alignItems: 'center',
       }}
     >
-      <Typography variant="subtitle1" sx={{color: 'grey', mb: 1}}>
+      <Grid container spacing={2} sx={{mt: 2}}>
+        {games.filter(game => game.status === GameStatus.PLAYING).map((game, index) => (
+          <Grid item xs={12} key={nanoid()}>
+              <Typography variant="subtitle2" sx={{color: 'grey'}}>
+                第{game.id}場比賽
+              </Typography>
+              <Item>
+              <Grid container spacing={2} columnSpacing={4}>
+                {game.players.filter(user => user.available === true && user.playing === true).map((user, index) => (
+                  <Grid item xs={6} key={nanoid()}>
+                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
+                        <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                          src={getAvatar(user.rank)} />
+                        <Box style={{alignSelf: 'center'}}>{user.name}</Box>
+                      </Item>
+                  </Grid>
+                ))}
+              </Grid>
+              
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <StyledVsBadge badgeContent={'vs'} style={{width: '100%'}}>
+                    <Button startIcon={<UndoIcon/>} sx={{mt: 2}} fullWidth={true} variant='outlined' onClick={() => { setGameId(game.id); handleGameCancel()}}>取消</Button>
+                  </StyledVsBadge>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button startIcon={<StopIcon/>} sx={{mt: 2}} fullWidth={true} variant='contained' onClick={() => { setGameId(game.id); handleGameEnd()}}>結束比賽</Button>
+                </Grid>
+              </Grid>
+              </Item>
+          </Grid>
+        ))}
+      </Grid>
+      <Typography variant="subtitle2" sx={{color: 'grey', mt: 2, mb: 1}}>
         可出賽球員
       </Typography>
       <Grid container spacing={2}>
@@ -292,37 +343,6 @@ function Game() {
         <Button startIcon={<PlayArrowIcon/>} sx={{mt: 2}} fullWidth={true}  variant='contained' onClick={() => handleGameStart()}>上場比賽</Button>
         </Grid>
       </Grid>
-      
-      <Grid container spacing={2} sx={{mt: 2}}>
-        {games.filter(game => game.status === GameStatus.PLAYING).map((game, index) => (
-          <Grid item xs={12} key={nanoid()}>
-              <Typography variant="subtitle2" sx={{color: 'grey'}}>
-                比賽中
-              </Typography>
-              <Item>
-              <Grid container spacing={2}>
-                {game.players.filter(user => user.available === true && user.playing === true).map((user, index) => (
-                  <Grid item xs={6} key={nanoid()}>
-                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
-                        <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
-                          src={getAvatar(user.rank)} />
-                        <Box style={{alignSelf: 'center'}}>{user.name}</Box>
-                      </Item>
-                  </Grid>
-                ))}
-              </Grid>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Button startIcon={<UndoIcon/>} sx={{mt: 2}} fullWidth={true} variant='outlined' onClick={() => { setGameId(game.id); handleGameCancel()}}>取消比賽</Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button startIcon={<StopIcon/>} sx={{mt: 2}} fullWidth={true} variant='contained' onClick={() => { setGameId(game.id); handleGameEnd()}}>結束比賽</Button>
-                </Grid>
-              </Grid>
-              </Item>
-          </Grid>
-        ))}
-      </Grid>
       <Dialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -339,7 +359,7 @@ function Game() {
         </DialogContent>
         <DialogActions>
           <Button variant='outlined' onClick={() => setConfirmOpen(false)} autoFocus>
-            取消
+            不結束
           </Button>
           <Button variant='contained' onClick={() => handleGameEnd()} autoFocus>
             確認
@@ -362,7 +382,7 @@ function Game() {
         </DialogContent>
         <DialogActions>
           <Button variant='outlined' onClick={() => setCancelConfirmOpen(false)} autoFocus>
-            取消
+            不取消
           </Button>
           <Button variant='contained' onClick={() => handleGameCancel()} autoFocus>
             確認
