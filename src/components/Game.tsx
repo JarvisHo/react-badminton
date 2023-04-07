@@ -33,8 +33,10 @@ function Game() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [gameId, setGameId] = useState<number>(0);
   const [games, setGames] = useState<GameType[]>([]);
+  const [playerAskOpen, setPlayerAskOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancleConfrimOpen, setCancelConfirmOpen] = useState(false);
+  const [pickCount, setPickCount] = useState(0);
 
   const userKey = 'users';
   const gameKey = 'games';
@@ -50,6 +52,12 @@ function Game() {
       setGames(gameCached);
     }
   }, []);
+
+  const handleClose = () => {
+    setPlayerAskOpen(false);
+    setConfirmOpen(false);
+    setCancelConfirmOpen(false);
+  }
 
   const getAvatar = (rank: number) => {
     switch (rank) {
@@ -151,9 +159,17 @@ function Game() {
 
     setUsers([...usersCopy]);
     localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+
+    handlePlayerAsk()
+  }
+
+  const handlePlayerAsk = () => {
+    handlePick();
+    setPlayerAskOpen(!playerAskOpen);
   }
 
   const handleGameStart = () => {
+    handleClose();
     let usersCopy = users.filter(user => user.checked === true);
     console.log(usersCopy.length)
     if(usersCopy.length !== 4) return
@@ -177,6 +193,7 @@ function Game() {
 
     setUsers([...usersCopy]);
     localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+    setPickCount(0);
   }
 
   const handleFillPick = (pickedNumber: number) => {
@@ -200,10 +217,33 @@ function Game() {
     setUsers([...usersCopy]);
   }
 
+  const handleAllRandomPick = () => {
+    const usersRandom = users.filter(user => user.available === true && user.checked === false && user.playing === false).sort((a,b) => {
+      return randomZeroOneMinusOne();
+    });
+    const picked = usersRandom.slice(0, 4);
+    const usersCopy = users.map(user => {
+      if(picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
+        user.checked = true;
+        return user;
+      }else{
+        user.checked = false;
+        return user;
+      }
+      return { ...user, checked: false};
+    })
+    setUsers([...usersCopy]);
+  }
+
   const handlePick = () => {
+    setPickCount(pickCount + 1);
     const pickedNumber = users.filter(user => user.checked === true).length
     if(pickedNumber < 4) {
       handleFillPick(pickedNumber)
+      return
+    }
+    if(pickCount > 2) {
+      handleAllRandomPick()
       return
     }
     const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a,b) => {
@@ -336,10 +376,10 @@ function Game() {
         ))}
       </Grid>
       <Grid container spacing={2}>
-        <Grid item xs={6} key={nanoid()}>
-          <Button startIcon={<CasinoIcon/>} sx={{mt: 2}} fullWidth={true}  variant='outlined' onClick={() => handlePick()}>推薦球員</Button>
+        <Grid item xs={6}>
+          <Button color='success' startIcon={<CasinoIcon/>} sx={{mt: 2}} fullWidth={true}  variant='contained' onClick={() => handlePick()}>推薦球員</Button>
         </Grid>
-        <Grid item xs={6} key={nanoid()}>
+        <Grid item xs={6}>
         <Button startIcon={<PlayArrowIcon/>} sx={{mt: 2}} fullWidth={true}  variant='contained' onClick={() => handleGameStart()}>上場比賽</Button>
         </Grid>
       </Grid>
@@ -386,6 +426,52 @@ function Game() {
           </Button>
           <Button variant='contained' onClick={() => handleGameCancel()} autoFocus>
             確認
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={playerAskOpen}
+        onClose={() => setPlayerAskOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          出賽球員建議
+        </DialogTitle>
+        <DialogContent style={{padding: '0px 15px 20px 15px'}}>
+          <DialogContentText id="alert-dialog-description">
+              <Grid container spacing={2} columnSpacing={4}>
+              {users.filter(user => user.checked === true)
+                .map((user, index) => (
+                  <Grid item xs={6} key={nanoid()}>
+                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
+                        <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                          src={getAvatar(user.rank)} />
+                        <Box style={{alignSelf: 'center'}}>{user.name.slice(0,4)}</Box>
+                      </Item>
+                  </Grid>
+                ))}
+              </Grid>
+              <Grid container spacing={2} sx={{height: '10px'}}>
+                <Grid item xs={6}>
+                  <StyledVsBadge badgeContent={'vs'} style={{width: '100%'}}>
+                  </StyledVsBadge>
+                </Grid>
+                <Grid item xs={6}>
+                </Grid>
+              </Grid>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+        <Button variant='text' onClick={() => setPlayerAskOpen(false)} autoFocus>
+            關閉
+          </Button>
+          <Button variant='contained' color="success" onClick={() => handlePick()} autoFocus>
+            重新推薦
+          </Button>
+          <Button variant='contained' onClick={() => handleGameStart()} autoFocus>
+            同意，開始比賽
           </Button>
         </DialogActions>
       </Dialog>
