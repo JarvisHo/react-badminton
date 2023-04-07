@@ -99,7 +99,7 @@ function History() {
       </Typography>
       
       <Grid container spacing={2} sx={{mt: 1}}>
-        {games.filter(game => game.status !== GameStatus.PLAYING && game.players.length > 0).map((game, index) => (
+        {games.filter(game => game.status === GameStatus.FINISHED && game.players.length > 0).map((game, index) => (
           <Grid item xs={12} key={nanoid()}>
             
               <Item>
