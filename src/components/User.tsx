@@ -33,6 +33,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Typography from "@mui/material/Typography";
 import Switch from '@mui/material/Switch';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from '@mui/material/OutlinedInput';
 
 function User() {
   const [editId, setEditId] = useState<number>(0)
@@ -185,7 +187,7 @@ function User() {
   }
 
   const handleDeleteUser = () => {
-    if(!confirmOpen) {
+    if (!confirmOpen) {
       setEditOpen(false)
       setConfirmOpen(true)
       return
@@ -223,7 +225,7 @@ function User() {
         alignItems: 'center',
       }}
     >
-      <Typography variant="subtitle1" sx={{color: 'grey', mb: 1}}>
+      <Typography variant="subtitle1" sx={{ color: 'grey', mb: 1 }}>
         選擇出賽球員
       </Typography>
       <List sx={{ width: '100%', margin: '0 auto', pt: 0 }}>
@@ -268,17 +270,14 @@ function User() {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>新增球員</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            名字：
-          </DialogContentText>
-          <FormControl>
-            <TextField
-              sx={{ marginTop: 2, width: 300 }}
-              aria-labelledby="name-label"
-              required
-              id="outlined-required"
+          <FormControl sx={{ mt: 1 }} style={{ width: '100%' }}>
+            <InputLabel htmlFor="component-outlined">名字</InputLabel>
+            <OutlinedInput
+              
+              id="component-outlined"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              label="Name"
             />
           </FormControl>
           <FormControl sx={{
@@ -312,17 +311,13 @@ function User() {
       <Dialog open={editOpen} onClose={handleClose}>
         <DialogTitle>編輯球員</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            名字：
-          </DialogContentText>
-          <FormControl>
-            <TextField
-              sx={{ marginTop: 2, width: 300 }}
-              aria-labelledby="name-label"
-              required
-              id="outlined-required"
+          <FormControl sx={{ mt: 1 }} style={{ width: '100%' }}>
+            <InputLabel htmlFor="edit-component-name">名字</InputLabel>
+            <OutlinedInput
+              id="edit-component-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              label="Name"
             />
           </FormControl>
           <FormControl sx={{ mt: 2 }}>
@@ -345,20 +340,16 @@ function User() {
               <FormControlLabel value="6" control={<Radio />} label="達克萊伊" />
             </RadioGroup>
           </FormControl>
-          <FormControl sx={{ mt: 2 }}>
-            <DialogContentText>
-              上場次數：
-            </DialogContentText>
-            <TextField
-              sx={{ marginTop: 2, width: 300 }}
-              aria-labelledby="name-label"
-              required
-              id="outlined-required"
+          <FormControl sx={{ mt: 2 }} style={{ width: '100%' }}>
+            <InputLabel htmlFor="edit-component-attended">上場次數</InputLabel>
+            <OutlinedInput
+              id="edit-component-attended"
               value={attended}
               onChange={(e) => setAttended(parseInt((e.target.value.length > 0) ? e.target.value : '0'))}
+              label="attended"
             />
           </FormControl>
-          <FormControlLabel sx={{mt: 1}} control={<Switch checked={playing} onChange={handlePlayingChange} />} label="比賽中" />
+          <FormControlLabel sx={{ mt: 1 }} control={<Switch checked={playing} onChange={handlePlayingChange} />} label="比賽中" />
         </DialogContent>
         <DialogActions>
           <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDeleteUser}>刪除</Button>
