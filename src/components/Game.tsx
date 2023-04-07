@@ -133,6 +133,7 @@ function Game() {
       if(game.id === gameId){
         game.status = GameStatus.FINISHED;
         game.available = false;
+        game.finished_at = new Date().getTime();
         let usersCopy = users.map(user => {
           if(game.players.filter(player => player.id === user.id).length > 0){
             user.playing = false;
@@ -177,12 +178,18 @@ function Game() {
       if(a.rank < b.rank) return -1;
       return randomZeroOneMinusOne();
     })
-    //usersCopy = [usersCopy[0], usersCopy[3], usersCopy[2], usersCopy[1]];
     usersCopy = usersCopy.map(user => {
       user.playing = true;
       return user;
     });
-    let gamesCopy = [{ id: games.length + 1, players: usersCopy, status: GameStatus.PLAYING, available: true }, ...games]
+    let gamesCopy = [{ 
+      id: games.length + 1, 
+      players: usersCopy, 
+      status: GameStatus.PLAYING, 
+      available: true, 
+      started_at: new Date().getTime(), 
+      finished_at: new Date().getTime()
+    }, ...games]
     setGames([...gamesCopy]);
     localStorage.setItem('games', JSON.stringify(gamesCopy));
 

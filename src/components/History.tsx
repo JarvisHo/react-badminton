@@ -86,6 +86,22 @@ function History() {
     }
   }
 
+  const getTimeDiff = ( started_at: number, finished_at:number ) =>
+  {
+      if( isNaN(started_at) || isNaN(finished_at) )return "";
+      
+      if (started_at < finished_at) {
+          var milisec_diff = finished_at - started_at;
+      }else{
+          var milisec_diff = started_at - finished_at;
+      }
+  
+      var days = Math.floor(milisec_diff / 1000 / 60 / (60 * 24));
+      var date_diff = new Date( milisec_diff );
+  
+      return days + date_diff.getMinutes() + " 分 " + date_diff.getSeconds() + " 秒";
+  }
+
   return (
     <Box
       sx={{
@@ -103,7 +119,6 @@ function History() {
           <Grid item xs={12} key={nanoid()}>
             
               <Item>
-              
                 <Grid container spacing={2}>
                   {game.players.map((user, index) => (
                     <Grid item xs={6} key={nanoid()}>
@@ -116,7 +131,7 @@ function History() {
                   ))}
                 </Grid>
                 <Typography variant="subtitle2" sx={{color: 'grey', mt: 1, textAlign: 'center'}}>
-                  {game.status === GameStatus.FINISHED ? '比賽結束' : '比賽取消'}
+                  第 {game.id} 場  {getTimeDiff(game.started_at, game.finished_at)}
                 </Typography>
               </Item>
               
