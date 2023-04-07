@@ -171,14 +171,17 @@ function Game() {
   const handleGameStart = () => {
     handleClose();
     let usersCopy = users.filter(user => user.checked === true);
-    console.log(usersCopy.length)
     if(usersCopy.length !== 4) return
     usersCopy.sort((a,b) => {
       if(a.rank > b.rank) return 1;
       if(a.rank < b.rank) return -1;
       return randomZeroOneMinusOne();
     })
-    usersCopy = [usersCopy[0], usersCopy[3], usersCopy[2], usersCopy[1]];
+    //usersCopy = [usersCopy[0], usersCopy[3], usersCopy[2], usersCopy[1]];
+    usersCopy = usersCopy.map(user => {
+      user.playing = true;
+      return user;
+    });
     let gamesCopy = [{ id: games.length + 1, players: usersCopy, status: GameStatus.PLAYING, available: true }, ...games]
     setGames([...gamesCopy]);
     localStorage.setItem('games', JSON.stringify(gamesCopy));
@@ -218,7 +221,7 @@ function Game() {
   }
 
   const handleAllRandomPick = () => {
-    const usersRandom = users.filter(user => user.available === true && user.checked === false && user.playing === false).sort((a,b) => {
+    const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a,b) => {
       return randomZeroOneMinusOne();
     });
     const picked = usersRandom.slice(0, 4);
@@ -328,7 +331,7 @@ function Game() {
               </Typography>
               <Item>
               <Grid container spacing={2} columnSpacing={4}>
-                {game.players.filter(user => user.available === true && user.playing === true).map((user, index) => (
+                {game.players.map((user) => (
                   <Grid item xs={6} key={nanoid()}>
                       <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
                         <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
@@ -442,13 +445,18 @@ function Game() {
         <DialogContent style={{padding: '0px 15px 20px 15px'}}>
           <DialogContentText id="alert-dialog-description">
               <Grid container spacing={2} columnSpacing={4}>
-              {users.filter(user => user.checked === true)
-                .map((user, index) => (
+              {users.filter(user => user.checked === true).sort((a,b) => {
+                if(a.rank > b.rank) return 1;
+                if(a.rank < b.rank) return -1;
+                return randomZeroOneMinusOne();
+              }).map((user, index) => ( 
                   <Grid item xs={6} key={nanoid()}>
-                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
+                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center', padding: '6px'}}>
                         <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
                           src={getAvatar(user.rank)} />
-                        <Box style={{alignSelf: 'center'}}>{user.name.slice(0,4)}</Box>
+                          <StyledBadge badgeContent={user.attended}>
+                            <Box style={{alignSelf: 'center'}}>{user.name.slice(0,4)}</Box>
+                          </StyledBadge>
                       </Item>
                   </Grid>
                 ))}
