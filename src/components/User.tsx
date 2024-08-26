@@ -50,7 +50,7 @@ function User() {
   const storageKey = 'users';
 
   useEffect(() => {
-    let cached = JSON.parse(localStorage.getItem(storageKey) || '[]')
+    let cached = JSON.parse(sessionStorage.getItem(storageKey) || '[]')
     if (cached.length > 0) {
       setUsers(cached);
     } else {
@@ -65,12 +65,12 @@ function User() {
     })
 
     setUsers(customUsers)
-    localStorage.setItem(storageKey, JSON.stringify(customUsers));
+    sessionStorage.setItem(storageKey, JSON.stringify(customUsers));
   }
 
   const handleReset = () => {
     init()
-    localStorage.clear()
+    sessionStorage.clear()
     setDefaultUsers()
   }
 
@@ -97,7 +97,7 @@ function User() {
     if (!userName) return
     let newUser = { id: users.length + 1, name: userName, rank: userRank, attended: 0, available: false, checked: false, playing: false };
     setUsers([...users, newUser]);
-    localStorage.setItem(storageKey, JSON.stringify([...users, newUser]));
+    sessionStorage.setItem(storageKey, JSON.stringify([...users, newUser]));
   }
 
   const getAvatar = (rank: number) => {
@@ -129,7 +129,7 @@ function User() {
       return user
     })
     setUsers([...checkedUsers])
-    localStorage.setItem(storageKey, JSON.stringify([...checkedUsers]));
+    sessionStorage.setItem(storageKey, JSON.stringify([...checkedUsers]));
   };
 
   const getAvatarName = (rank: number) => {
@@ -194,7 +194,7 @@ function User() {
     }
     let newUsers = users.filter((user) => user.id !== editId);
     setUsers([...newUsers]);
-    localStorage.setItem(storageKey, JSON.stringify([...newUsers]));
+    sessionStorage.setItem(storageKey, JSON.stringify([...newUsers]));
     setEditId(0);
     setName('')
     setRank(0)
@@ -209,7 +209,7 @@ function User() {
       return user
     })
     setUsers([...newUsers]);
-    localStorage.setItem(storageKey, JSON.stringify([...newUsers]));
+    sessionStorage.setItem(storageKey, JSON.stringify([...newUsers]));
     handleClose()
   }
 
@@ -273,7 +273,7 @@ function User() {
           <FormControl sx={{ mt: 1 }} style={{ width: '100%' }}>
             <InputLabel htmlFor="component-outlined">名字</InputLabel>
             <OutlinedInput
-              
+
               id="component-outlined"
               value={name}
               onChange={(e) => setName(e.target.value)}

@@ -51,13 +51,13 @@ function App() {
   };
 
   const resetAttended = () => {
-    let users = JSON.parse(localStorage.getItem(storageKey) || '[]')
+    let users = JSON.parse(sessionStorage.getItem(storageKey) || '[]')
 
     if (users.length > 0) {
       users = users.map((user: UserType) => {
         return { ...user, attended: 0 }
       })
-      localStorage.setItem(storageKey, JSON.stringify(users));
+      sessionStorage.setItem(storageKey, JSON.stringify(users));
     }
   }
 
@@ -83,7 +83,7 @@ function App() {
             setActiveStep(newValue);
           }}
         >
-          <BottomNavigationAction label="球員" icon={<PersonIcon />}/>
+          <BottomNavigationAction label="球員" icon={<PersonIcon />} />
           <BottomNavigationAction label="比賽" icon={<SportsTennisIcon />} />
           <BottomNavigationAction label="紀錄" icon={<FormatListBulletedIcon />} />
         </BottomNavigation>

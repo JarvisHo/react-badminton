@@ -24,7 +24,7 @@ function History() {
   const gameKey = 'games';
 
   useEffect(() => {
-    let gameCached = JSON.parse(localStorage.getItem(gameKey) || '[]')
+    let gameCached = JSON.parse(sessionStorage.getItem(gameKey) || '[]')
     if (gameCached && games.length == 0) {
       setGames(gameCached);
     }
@@ -41,7 +41,7 @@ function History() {
 
   const handleReset = () => {
     const gamesCopy = games.filter(game => game.status === GameStatus.PLAYING && game.players.length > 0)
-    localStorage.setItem(gameKey, JSON.stringify(gamesCopy));
+    sessionStorage.setItem(gameKey, JSON.stringify(gamesCopy));
     setGames([...gamesCopy]);
   }
 
@@ -86,20 +86,19 @@ function History() {
     }
   }
 
-  const getTimeDiff = ( started_at: number, finished_at:number ) =>
-  {
-      if( isNaN(started_at) || isNaN(finished_at) )return "";
-      
-      if (started_at < finished_at) {
-          var milisec_diff = finished_at - started_at;
-      }else{
-          var milisec_diff = started_at - finished_at;
-      }
-  
-      var days = Math.floor(milisec_diff / 1000 / 60 / (60 * 24));
-      var date_diff = new Date( milisec_diff );
-  
-      return days + date_diff.getMinutes() + " 分 " + date_diff.getSeconds() + " 秒";
+  const getTimeDiff = (started_at: number, finished_at: number) => {
+    if (isNaN(started_at) || isNaN(finished_at)) return "";
+
+    if (started_at < finished_at) {
+      var milisec_diff = finished_at - started_at;
+    } else {
+      var milisec_diff = started_at - finished_at;
+    }
+
+    var days = Math.floor(milisec_diff / 1000 / 60 / (60 * 24));
+    var date_diff = new Date(milisec_diff);
+
+    return days + date_diff.getMinutes() + " 分 " + date_diff.getSeconds() + " 秒";
   }
 
   return (
@@ -110,37 +109,37 @@ function History() {
         alignItems: 'center',
       }}
     >
-      <Typography variant="subtitle1" sx={{color: 'grey', mb: 1}}>
+      <Typography variant="subtitle1" sx={{ color: 'grey', mb: 1 }}>
         歷史場次紀錄
       </Typography>
-      
-      <Grid container spacing={2} sx={{mt: 1}}>
+
+      <Grid container spacing={2} sx={{ mt: 1 }}>
         {games.filter(game => game.status === GameStatus.FINISHED && game.players.length > 0).map((game, index) => (
           <Grid item xs={12} key={nanoid()}>
-            
-              <Item>
-                <Grid container spacing={2}>
-                  {game.players.map((user, index) => (
-                    <Grid item xs={6} key={nanoid()}>
-                        <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
-                          <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
-                            src={getAvatar(user.rank)} />
-                          <Box style={{alignSelf: 'center'}}>{user.name}</Box>
-                        </Item>
-                    </Grid>
-                  ))}
-                </Grid>
-                <Typography variant="subtitle2" sx={{color: 'grey', mt: 1, textAlign: 'center'}}>
-                  第 {game.id} 場  {getTimeDiff(game.started_at, game.finished_at)}
-                </Typography>
-              </Item>
-              
+
+            <Item>
+              <Grid container spacing={2}>
+                {game.players.map((user, index) => (
+                  <Grid item xs={6} key={nanoid()}>
+                    <Item style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center' }}>
+                      <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                        src={getAvatar(user.rank)} />
+                      <Box style={{ alignSelf: 'center' }}>{user.name}</Box>
+                    </Item>
+                  </Grid>
+                ))}
+              </Grid>
+              <Typography variant="subtitle2" sx={{ color: 'grey', mt: 1, textAlign: 'center' }}>
+                第 {game.id} 場  {getTimeDiff(game.started_at, game.finished_at)}
+              </Typography>
+            </Item>
+
           </Grid>
         ))}
       </Grid>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Button startIcon={<RestartAltIcon/>} sx={{mt: 2}} fullWidth={true} variant='outlined' onClick={() => { handleReset()}}>清除所有紀錄</Button>
+          <Button startIcon={<RestartAltIcon />} sx={{ mt: 2 }} fullWidth={true} variant='outlined' onClick={() => { handleReset() }}>清除所有紀錄</Button>
         </Grid>
       </Grid>
     </Box>

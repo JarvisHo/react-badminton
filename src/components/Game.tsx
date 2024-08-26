@@ -42,12 +42,12 @@ function Game() {
   const gameKey = 'games';
 
   useEffect(() => {
-    let userCached = JSON.parse(localStorage.getItem(userKey) || '[]')
+    let userCached = JSON.parse(sessionStorage.getItem(userKey) || '[]')
     if (userCached.length > 0) {
       setUsers([...userCached]);
     }
 
-    let gameCached = JSON.parse(localStorage.getItem(gameKey) || '[]')
+    let gameCached = JSON.parse(sessionStorage.getItem(gameKey) || '[]')
     if (gameCached && games.length == 0) {
       setGames(gameCached);
     }
@@ -107,7 +107,7 @@ function Game() {
 
   const toggleUser = (id: number) => {
     let usersCopy = users.map(user => {
-      if(user.id === id) user.checked = !user.checked;
+      if (user.id === id) user.checked = !user.checked;
       return user
     });
     setUsers([...usersCopy]);
@@ -123,35 +123,35 @@ function Game() {
   }));
 
   const handleGameEnd = () => {
-    if(!confirmOpen){ 
+    if (!confirmOpen) {
       setConfirmOpen(true);
       return
-    }else {
+    } else {
       setConfirmOpen(false);
     }
     let gamesCopy = games.map(game => {
-      if(game.id === gameId){
+      if (game.id === gameId) {
         game.status = GameStatus.FINISHED;
         game.available = false;
         game.finished_at = new Date().getTime();
         let usersCopy = users.map(user => {
-          if(game.players.filter(player => player.id === user.id).length > 0){
+          if (game.players.filter(player => player.id === user.id).length > 0) {
             user.playing = false;
             user.attended = user.attended + 1;
           }
           return user;
         })
         setUsers([...usersCopy]);
-        localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+        sessionStorage.setItem(userKey, JSON.stringify([...usersCopy]));
       }
       return game
     })
     setGames([...gamesCopy]);
-    localStorage.setItem('games', JSON.stringify(gamesCopy));
+    sessionStorage.setItem('games', JSON.stringify(gamesCopy));
 
     let usersCopy = users.filter(user => user.checked === true && user.playing === true);
     usersCopy = users.map(user => {
-      if(user.checked === true){
+      if (user.checked === true) {
         user.checked = false;
         user.playing = false;
       }
@@ -159,7 +159,7 @@ function Game() {
     });
 
     setUsers([...usersCopy]);
-    localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+    sessionStorage.setItem(userKey, JSON.stringify([...usersCopy]));
 
     handlePlayerAsk()
   }
@@ -172,29 +172,29 @@ function Game() {
   const handleGameStart = () => {
     handleClose();
     let usersCopy = users.filter(user => user.checked === true);
-    if(usersCopy.length !== 4) return
-    usersCopy.sort((a,b) => {
-      if(a.rank > b.rank) return 1;
-      if(a.rank < b.rank) return -1;
+    if (usersCopy.length !== 4) return
+    usersCopy.sort((a, b) => {
+      if (a.rank > b.rank) return 1;
+      if (a.rank < b.rank) return -1;
       return randomZeroOneMinusOne();
     })
     usersCopy = usersCopy.map(user => {
       user.playing = true;
       return user;
     });
-    let gamesCopy = [{ 
-      id: games.length + 1, 
-      players: usersCopy, 
-      status: GameStatus.PLAYING, 
-      available: true, 
-      started_at: new Date().getTime(), 
+    let gamesCopy = [{
+      id: games.length + 1,
+      players: usersCopy,
+      status: GameStatus.PLAYING,
+      available: true,
+      started_at: new Date().getTime(),
       finished_at: new Date().getTime()
     }, ...games]
     setGames([...gamesCopy]);
-    localStorage.setItem('games', JSON.stringify(gamesCopy));
+    sessionStorage.setItem('games', JSON.stringify(gamesCopy));
 
     usersCopy = users.map(user => {
-      if(user.checked === true){
+      if (user.checked === true) {
         user.checked = false;
         user.playing = true;
       }
@@ -202,45 +202,45 @@ function Game() {
     });
 
     setUsers([...usersCopy]);
-    localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+    sessionStorage.setItem(userKey, JSON.stringify([...usersCopy]));
     setPickCount(0);
   }
 
   const handleFillPick = (pickedNumber: number) => {
-    const usersRandom = users.filter(user => user.available === true && user.checked === false && user.playing === false).sort((a,b) => {
-      if(a.attended > b.attended) return 1;
-      if(a.attended < b.attended) return -1;
+    const usersRandom = users.filter(user => user.available === true && user.checked === false && user.playing === false).sort((a, b) => {
+      if (a.attended > b.attended) return 1;
+      if (a.attended < b.attended) return -1;
       return randomZeroOneMinusOne();
     });
     const picked = usersRandom.slice(0, 4 - pickedNumber);
     const usersCopy = users.map(user => {
-      if(picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
+      if (picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
         user.checked = true;
         return user;
       }
-      if(users.filter(user => user.checked === true).filter(usersCopy => usersCopy.id === user.id).length > 0) {
+      if (users.filter(user => user.checked === true).filter(usersCopy => usersCopy.id === user.id).length > 0) {
         user.checked = true;
         return user;
       }
-      return { ...user, checked: false};
+      return { ...user, checked: false };
     })
     setUsers([...usersCopy]);
   }
 
   const handleAllRandomPick = () => {
-    const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a,b) => {
+    const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a, b) => {
       return randomZeroOneMinusOne();
     });
     const picked = usersRandom.slice(0, 4);
     const usersCopy = users.map(user => {
-      if(picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
+      if (picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
         user.checked = true;
         return user;
-      }else{
+      } else {
         user.checked = false;
         return user;
       }
-      return { ...user, checked: false};
+      return { ...user, checked: false };
     })
     setUsers([...usersCopy]);
   }
@@ -248,57 +248,57 @@ function Game() {
   const handlePick = () => {
     setPickCount(pickCount + 1);
     const pickedNumber = users.filter(user => user.checked === true).length
-    if(pickedNumber < 4) {
+    if (pickedNumber < 4) {
       handleFillPick(pickedNumber)
       return
     }
-    if(pickCount > 2) {
+    if (pickCount > 2) {
       handleAllRandomPick()
       return
     }
-    const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a,b) => {
-      if(a.attended > b.attended) return 1;
-      if(a.attended < b.attended) return -1;
+    const usersRandom = users.filter(user => user.available === true && user.playing === false).sort((a, b) => {
+      if (a.attended > b.attended) return 1;
+      if (a.attended < b.attended) return -1;
       return randomZeroOneMinusOne();
     });
     const picked = usersRandom.slice(0, 4);
     const usersCopy = users.map(user => {
-      if(picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
+      if (picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
         user.checked = true;
         return user;
       }
-      return { ...user, checked: false};
+      return { ...user, checked: false };
     })
     setUsers([...usersCopy]);
   }
 
   const handleGameCancel = () => {
-    if(!cancleConfrimOpen){
+    if (!cancleConfrimOpen) {
       setCancelConfirmOpen(true);
       return
-    }else{
+    } else {
       setCancelConfirmOpen(false);
     }
     const gamesCopy = games.map(game => {
-      if(game.id === gameId) {
+      if (game.id === gameId) {
         return { ...game, status: GameStatus.CANCLED, available: false }
       }
       return game
     });
     setGames([...gamesCopy]);
-    localStorage.setItem('games', JSON.stringify(gamesCopy));
+    sessionStorage.setItem('games', JSON.stringify(gamesCopy));
 
     const picked = games.find(game => game.id === gameId)?.players || [];
     const usersCopy = users.map(user => {
-      if(picked.filter(usersCopy => usersCopy.id === user.id).length > 0){
+      if (picked.filter(usersCopy => usersCopy.id === user.id).length > 0) {
         user.playing = false;
         user.checked = false;
         return user;
       }
-      return { ...user, checked: false};
+      return { ...user, checked: false };
     })
     setUsers([...usersCopy]);
-    localStorage.setItem(userKey, JSON.stringify([...usersCopy]));
+    sessionStorage.setItem(userKey, JSON.stringify([...usersCopy]));
     setGameId(0);
   }
 
@@ -330,67 +330,67 @@ function Game() {
         alignItems: 'center',
       }}
     >
-      <Grid container spacing={2} sx={{mt: 2}}>
+      <Grid container spacing={2} sx={{ mt: 2 }}>
         {games.filter(game => game.status === GameStatus.PLAYING).map((game, index) => (
           <Grid item xs={12} key={nanoid()}>
-              <Typography variant="subtitle2" sx={{color: 'grey'}}>
-                第{game.id}場比賽
-              </Typography>
-              <Item>
+            <Typography variant="subtitle2" sx={{ color: 'grey' }}>
+              第{game.id}場比賽
+            </Typography>
+            <Item>
               <Grid container spacing={2} columnSpacing={4}>
                 {game.players.map((user) => (
                   <Grid item xs={6} key={nanoid()}>
-                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
-                        <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
-                          src={getAvatar(user.rank)} />
-                        <Box style={{alignSelf: 'center'}}>{user.name}</Box>
-                      </Item>
+                    <Item style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center' }}>
+                      <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                        src={getAvatar(user.rank)} />
+                      <Box style={{ alignSelf: 'center' }}>{user.name}</Box>
+                    </Item>
                   </Grid>
                 ))}
               </Grid>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <StyledVsBadge badgeContent={'vs'} style={{width: '100%'}}>
-                    <Button startIcon={<UndoIcon/>} sx={{mt: 2}} fullWidth={true} variant='outlined' onClick={() => { setGameId(game.id); handleGameCancel()}}>取消</Button>
+                  <StyledVsBadge badgeContent={'vs'} style={{ width: '100%' }}>
+                    <Button startIcon={<UndoIcon />} sx={{ mt: 2 }} fullWidth={true} variant='outlined' onClick={() => { setGameId(game.id); handleGameCancel() }}>取消</Button>
                   </StyledVsBadge>
                 </Grid>
                 <Grid item xs={6}>
-                  <Button startIcon={<StopIcon/>} sx={{mt: 2}} fullWidth={true} variant='contained' onClick={() => { setGameId(game.id); handleGameEnd()}}>結束比賽</Button>
+                  <Button startIcon={<StopIcon />} sx={{ mt: 2 }} fullWidth={true} variant='contained' onClick={() => { setGameId(game.id); handleGameEnd() }}>結束比賽</Button>
                 </Grid>
               </Grid>
-              </Item>
+            </Item>
           </Grid>
         ))}
       </Grid>
-      <Typography variant="subtitle2" sx={{color: 'grey', mt: 2, mb: 1}}>
+      <Typography variant="subtitle2" sx={{ color: 'grey', mt: 2, mb: 1 }}>
         可出賽球員
       </Typography>
       <Grid container spacing={2}>
         {users.filter(user => user.available === true && user.playing === false).map((user, index) => (
           <Grid item xs={6} key={nanoid()}>
-              <Item onClick={() => toggleUser(user.id)} style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center'}}>
-                  <Checkbox
-                    edge="start"
-                    checked={user.checked}
-                    tabIndex={-1}
-                    disableRipple
-                  />
-                  <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
-                  src={getAvatar(user.rank)} />
-                  <StyledBadge badgeContent={user.attended}>
-                    <Box style={{alignSelf: 'center'}}>{user.name.slice(0,4)}</Box>
-                  </StyledBadge>
-              </Item>
+            <Item onClick={() => toggleUser(user.id)} style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center' }}>
+              <Checkbox
+                edge="start"
+                checked={user.checked}
+                tabIndex={-1}
+                disableRipple
+              />
+              <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                src={getAvatar(user.rank)} />
+              <StyledBadge badgeContent={user.attended}>
+                <Box style={{ alignSelf: 'center' }}>{user.name.slice(0, 10)}</Box>
+              </StyledBadge>
+            </Item>
           </Grid>
         ))}
       </Grid>
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <Button color='success' startIcon={<CasinoIcon/>} sx={{mt: 2}} fullWidth={true}  variant='contained' onClick={() => handlePick()}>推薦球員</Button>
+          <Button color='success' startIcon={<CasinoIcon />} sx={{ mt: 2 }} fullWidth={true} variant='contained' onClick={() => handlePick()}>推薦球員</Button>
         </Grid>
         <Grid item xs={6}>
-        <Button startIcon={<PlayArrowIcon/>} sx={{mt: 2}} fullWidth={true}  variant='contained' onClick={() => handleGameStart()}>上場比賽</Button>
+          <Button startIcon={<PlayArrowIcon />} sx={{ mt: 2 }} fullWidth={true} variant='contained' onClick={() => handleGameStart()}>上場比賽</Button>
         </Grid>
       </Grid>
       <Dialog
@@ -449,37 +449,37 @@ function Game() {
         <DialogTitle id="alert-dialog-title">
           出賽球員建議
         </DialogTitle>
-        <DialogContent style={{padding: '0px 15px 20px 15px'}}>
+        <DialogContent style={{ padding: '0px 15px 20px 15px' }}>
           <DialogContentText id="alert-dialog-description">
-              <Grid container spacing={2} columnSpacing={4}>
-              {users.filter(user => user.checked === true).sort((a,b) => {
-                if(a.rank > b.rank) return 1;
-                if(a.rank < b.rank) return -1;
+            <Grid container spacing={2} columnSpacing={4}>
+              {users.filter(user => user.checked === true).sort((a, b) => {
+                if (a.rank > b.rank) return 1;
+                if (a.rank < b.rank) return -1;
                 return randomZeroOneMinusOne();
-              }).map((user, index) => ( 
-                  <Grid item xs={6} key={nanoid()}>
-                      <Item style={{display: 'flex', flexWrap: 'wrap', alignContent: 'center', padding: '6px'}}>
-                        <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
-                          src={getAvatar(user.rank)} />
-                          <StyledBadge badgeContent={user.attended}>
-                            <Box style={{alignSelf: 'center'}}>{user.name.slice(0,4)}</Box>
-                          </StyledBadge>
-                      </Item>
-                  </Grid>
-                ))}
-              </Grid>
-              <Grid container spacing={2} sx={{height: '10px'}}>
-                <Grid item xs={6}>
-                  <StyledVsBadge badgeContent={'vs'} style={{width: '100%'}}>
-                  </StyledVsBadge>
+              }).map((user, index) => (
+                <Grid item xs={6} key={nanoid()}>
+                  <Item style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center', padding: '6px' }}>
+                    <Avatar sx={{ width: 36, height: 36, mr: 1 }} alt={getAvatarName(user.rank)}
+                      src={getAvatar(user.rank)} />
+                    <StyledBadge badgeContent={user.attended}>
+                      <Box style={{ alignSelf: 'center' }}>{user.name.slice(0, 4)}</Box>
+                    </StyledBadge>
+                  </Item>
                 </Grid>
-                <Grid item xs={6}>
-                </Grid>
+              ))}
+            </Grid>
+            <Grid container spacing={2} sx={{ height: '10px' }}>
+              <Grid item xs={6}>
+                <StyledVsBadge badgeContent={'vs'} style={{ width: '100%' }}>
+                </StyledVsBadge>
               </Grid>
+              <Grid item xs={6}>
+              </Grid>
+            </Grid>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-        <Button variant='text' onClick={() => setPlayerAskOpen(false)} autoFocus>
+          <Button variant='text' onClick={() => setPlayerAskOpen(false)} autoFocus>
             關閉
           </Button>
           <Button variant='contained' color="success" onClick={() => handlePick()} autoFocus>
